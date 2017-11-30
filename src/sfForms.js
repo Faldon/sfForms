@@ -3,12 +3,14 @@ var sfForms = (function() {
       version = '0.0.1',
       _collectionHolder,
       _options = {
-        elementType: 'item',
-        elementRootClass: 'col-item',
+        itemType: 'item',
+        itemFormElement: 'div',
+        itemFormClass: 'collection-item',
+        namePrototype: '__name__',
         allowAdd: true,
         allowDelete: true,
-        classAddElement: [],
-        classDeleteElement: [],
+        addItemElementClass: [],
+        deleteItemElementClass: [],
         beforeAdd: function() {
         },
         afterAdd: function() {
@@ -40,6 +42,22 @@ var sfForms = (function() {
         }
         return null;
       },
+      _onItemDelete = function(evt) {
+        _options.beforeDelete();
+        evt.srcElement.parentElement.remove();
+        _options.afterDelete();
+      },
+      _onItemAdd = function(evt) {
+        var index = _collectionHolder.dataset.index,
+            itemForm = _collectionHolder.dataset.prototype.replace(
+                new RegExp(_options.namePrototype, 'g'), index),
+            item = document.createElement(_options.itemFormElement);
+        _options.beforeAdd();
+        _collectionHolder.dataset.index = (parseInt(index) + 1).toString(10);
+        item.innerHTML = itemForm;
+        _collectionHolder.appendChild(item);
+        _options.afterDelete();
+      },
       printId = function() {
         _printMessage(_collectionHolder);
         return this;
@@ -57,36 +75,44 @@ var sfForms = (function() {
         if (_collectionHolder === null) {
           throw new EvalError('No suitable element found');
         }
-        if(_options.allowAdd) {
+        if (_options.allowAdd) {
           _collectionHolder.parentNode.insertBefore(
-              _options.linkAddElement(),
+              _options.addItemElement(),
               _collectionHolder.nextSibling
           );
         }
-        if(_options.allowDelete) {
-          for(var node in _collectionHolder.childNodes) {
-            _printMessage(node.className);
+        if (_options.allowDelete) {
+          for (var i = 0, j = _collectionHolder.children.length; i < j; i++) {
+            var node = _collectionHolder.children[i];
+            if (node.classList.contains(_options.itemFormClass)) {
+              node.insertBefore(
+                  _options.deleteItemElement(),
+                  node.firstChild
+              );
+            }
           }
         }
         return this;
       };
 
-  _options.titleDeleteElement = 'Delete this ' + _options.elementType;
-  _options.titleAddElement = 'Add ' + _options.elementType;
-  _options.linkAddElement = function(tag) {
-    var outer = tag || "button",
+  _options.deleteItemElementText = 'Delete this ' + _options.itemType;
+  _options.addItemElementText = 'Add ' + _options.itemType;
+  _options.addItemElement = function(elementType) {
+    var outer = elementType || 'button',
         el = document.createElement(outer),
-        attr = document.createAttribute("class");
-    el.setAttribute("class", _options.classAddElement.join(' '));
-    el.innerHTML = _options.titleAddElement;
+        attr = document.createAttribute('class');
+    el.setAttribute('class', _options.addItemElementClass.join(' '));
+    el.onclick = _onItemAdd;
+    el.innerHTML = _options.addItemElementText;
     return el;
   };
-  _options.linkDeleteElement = function(tag) {
-    var outer = tag || "button",
+  _options.deleteItemElement = function(elementType) {
+    var outer = elementType || 'button',
         el = document.createElement(outer),
-        attr = document.createAttribute("class");
-    el.setAttribute("class", _options.classDeleteElement.join(' '));
-    el.innerHTML = _options.titleDeleteElement;
+        attr = document.createAttribute('class');
+    el.setAttribute('class', _options.deleteItemElementClass.join(' '));
+    el.onclick = _onItemDelete;
+    el.innerHTML = _options.deleteItemElementText;
     return el;
   };
 
