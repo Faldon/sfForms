@@ -49,7 +49,7 @@ var sfForms = (function() {
         parent.insertBefore(element, sibling);
       },
       _onItemDelete = function(evt) {
-        _options.beforeDelete(evt.srcElement.parentElement());
+        _options.beforeDelete(evt.srcElement.parentElement);
         evt.srcElement.parentElement.remove();
         _options.afterDelete(_collectionHolder);
       },
