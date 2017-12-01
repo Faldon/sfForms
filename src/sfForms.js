@@ -18,7 +18,7 @@ var sfForms = (function() {
         beforeDelete: function(element) {
         },
         afterDelete: function(collectionNode) {
-        },
+        }
       },
       sfForms = function(selector, options) {
         return new init(selector, options);
@@ -76,7 +76,7 @@ var sfForms = (function() {
         return _collectionHolder.dataset.prototype;
       },
       _collectionIndex = function(val) {
-        if(val !== undefined) {
+        if (val !== undefined) {
           _collectionHolder.dataset.index = val;
         }
         return _collectionHolder.dataset.index;
@@ -120,8 +120,8 @@ var sfForms = (function() {
   _options.addItemElement = function(elementType) {
     var outer = elementType || 'button',
         el = document.createElement(outer);
-    el.setAttribute('id', 'btn-add-'+_options.itemType+'-'+_collectionId);
-    el.setAttribute('name', 'btn-add-'+_options.itemType);
+    el.setAttribute('id', 'btn-add-' + _options.itemType + '-' + _collectionId);
+    el.setAttribute('name', 'btn-add-' + _options.itemType);
     el.setAttribute('class', _options.addItemElementClass.join(' '));
     el.onclick = _onItemAdd;
     el.innerHTML = _options.addItemElementText;
@@ -130,9 +130,10 @@ var sfForms = (function() {
   _options.deleteItemElement = function(elementType) {
     var outer = elementType || 'button',
         el = document.createElement(outer),
-        btnCount = document.getElementsByName('btn-del-'+_options.itemType).length;
-    el.setAttribute('id', 'btn-del-'+_options.itemType+'-'+btnCount);
-    el.setAttribute('name', 'btn-del-'+_options.itemType);
+        btnCount = document.getElementsByName('btn-del-' +
+            _options.itemType).length;
+    el.setAttribute('id', 'btn-del-' + _options.itemType + '-' + btnCount);
+    el.setAttribute('name', 'btn-del-' + _options.itemType);
     el.setAttribute('class', _options.deleteItemElementClass.join(' '));
     el.onclick = _onItemDelete;
     el.innerHTML = _options.deleteItemElementText;
@@ -146,7 +147,7 @@ var sfForms = (function() {
       return _options;
     }(),
     printId: printId,
-    showOptions: showOptions,
+    showOptions: showOptions
   };
 
   return sfForms;
