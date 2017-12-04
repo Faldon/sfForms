@@ -1,6 +1,3 @@
-/**
- * @typedef {object} MouseEvent
- */
 var sfForms = (function() {
   var
       version = '0.0.1',
