@@ -117,13 +117,14 @@ var sfForms = (function() {
        */
       _onItemDelete = function(evt) {
         evt.preventDefault();
+        var el = evt.srcElement.closest('.btn-del-' + _options.itemType);
         if (typeof _options.beforeDelete === 'function') {
-          _options.beforeDelete(evt.srcElement.parentElement);
+          _options.beforeDelete(el.parentElement);
         }
         if (_options.onlyHide) {
-          evt.srcElement.parentElement.style.setProperty('display', 'none');
+          el.parentElement.style.setProperty('display', 'none');
         } else {
-          evt.srcElement.parentElement.remove();
+          el.parentElement.remove();
         }
         if (typeof _options.afterDelete === 'function') {
           _options.afterDelete(_collectionHolder);
@@ -255,8 +256,8 @@ var sfForms = (function() {
     var outer = elementType || 'button',
         el = document.createElement(outer);
     el.setAttribute('id', 'btn-add-' + _options.itemType + '-' + _collectionId);
-    el.setAttribute('name', 'btn-add-' + _options.itemType);
     el.setAttribute('class', _options.addItemElementClass.join(' '));
+    el.classList.add('btn-add-' + _options.itemType);
     el.onclick = _onItemAdd;
     el.innerHTML = _options.addItemElementText;
     return el;
@@ -271,8 +272,8 @@ var sfForms = (function() {
         el = document.createElement(outer);
     el.setAttribute('id', 'btn-del-' + _options.itemType + '-' +
         _collectionIndex());
-    el.setAttribute('name', 'btn-del-' + _options.itemType);
     el.setAttribute('class', _options.deleteItemElementClass.join(' '));
+    el.classList.add('btn-del-' + _options.itemType);
     el.onclick = _onItemDelete;
     el.innerHTML = _options.deleteItemElementText;
     return el;
