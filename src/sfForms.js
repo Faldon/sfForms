@@ -3,12 +3,19 @@ var sfForms = (function() {
       version = '0.0.1',
       _collectionHolder,
       _collectionId,
+      _languages = [
+        'en',
+        'de'
+      ],
       /**
        * @property {string} itemType - The type of items in the collection
+       * @property {string} rootElement - The root node type holding the element
        * @property {string} itemFormClass - The root class for the item form
        * @property {string} namePrototype - The form name in the data prototype
        * @property {boolean} allowAdd - Adding of new items allowed
        * @property {boolean} allowDelete - Deleting of new items allowed
+       * @property {boolean} onlyHide - Hide the collection element instead of
+       *                                removing it from the DOM
        * @property {array} addItemElementClass - CSS classes added to the add
        *                                         item HTMLElement
        * @property {array} deleteItemElementClass - CSS classes added to the
@@ -17,10 +24,12 @@ var sfForms = (function() {
        */
       _options = {
         itemType: 'item',
+        rootElement: 'div',
         itemFormClass: 'collection-item',
         namePrototype: '__name__',
         allowAdd: true,
         allowDelete: true,
+        onlyHide: false,
         addItemElementClass: [],
         deleteItemElementClass: [],
         beforeAdd: function(collectionNode) {
@@ -30,8 +39,10 @@ var sfForms = (function() {
         beforeDelete: function(element) {
         },
         afterDelete: function(collectionNode) {
-        }
+        },
+        language: 'en'
       },
+      _i18n = {},
       /**
        * Construct a new sfForms Object
        * @constructs sfForms
@@ -106,9 +117,17 @@ var sfForms = (function() {
        */
       _onItemDelete = function(evt) {
         evt.preventDefault();
-        _options.beforeDelete(evt.srcElement.parentElement);
-        evt.srcElement.parentElement.remove();
-        _options.afterDelete(_collectionHolder);
+        if (typeof _options.beforeDelete === 'function') {
+          _options.beforeDelete(evt.srcElement.parentElement);
+        }
+        if (_options.onlyHide) {
+          evt.srcElement.parentElement.style.setProperty('display', 'none');
+        } else {
+          evt.srcElement.parentElement.remove();
+        }
+        if (typeof _options.afterDelete === 'function') {
+          _options.afterDelete(_collectionHolder);
+        }
       },
       /**
        * Build the item form added to the collection and insert it into the DOM
@@ -122,7 +141,9 @@ var sfForms = (function() {
             itemForm = _itemFormPrototype().replace(
                 new RegExp(_options.namePrototype, 'g'), index),
             item = document.createElement('div');
-        _options.beforeAdd(_collectionHolder);
+        if (typeof _options.beforeAdd === 'function') {
+          _options.beforeAdd(_collectionHolder);
+        }
         _collectionIndex((parseInt(index) + 1).toString(10));
         _collectionHolder.appendChild(item);
         item.outerHTML = itemForm;
@@ -134,7 +155,9 @@ var sfForms = (function() {
               item.firstChild);
         }
         _collectionHolder.appendChild(item);
-        _options.afterAdd(_collectionHolder.lastElementChild);
+        if (typeof _options.afterAdd === 'function') {
+          _options.afterAdd(_collectionHolder.lastElementChild);
+        }
       },
       /**
        * Get the data-prototype of the collection holder
@@ -167,11 +190,22 @@ var sfForms = (function() {
         for (var p in userOptions) {
           if (userOptions.hasOwnProperty(p)) _options[p] = userOptions[p];
         }
+        if (!~_languages.indexOf(_options.language)) _options.language = 'en';
+        _i18n = Object.freeze({
+          add: {
+            'en': 'Add ' + _options.itemType,
+            'de': _options.itemType + ' hinzufügen'
+          },
+          delete: {
+            'en': 'Delete ' + _options.itemType,
+            'de': _options.itemType + ' löschen'
+          }
+        });
         if (!userOptions.hasOwnProperty('deleteItemElementText')) {
-          _options.deleteItemElementText = 'Delete this ' + _options.itemType;
+          _options.deleteItemElementText = _i18n.delete[_options.language];
         }
         if (!userOptions.hasOwnProperty('addItemElementText')) {
-          _options.addItemElementText = 'Add ' + _options.itemType;
+          _options.addItemElementText = _i18n.add[_options.language];
         }
         Object.freeze(_options);
         if (_collectionHolder === null) {
@@ -182,13 +216,13 @@ var sfForms = (function() {
           _insertAddItemElement(_options.addItemElement(),
               _collectionHolder.parentNode, _collectionHolder.nextSibling);
         }
-        if (_options.allowDelete) {
-          for (var i = 0, j = _collectionHolder.children.length; i < j; i++) {
-            var node = _collectionHolder.children[i];
-            if (node.classList.contains(_options.itemFormClass)) {
-              _insertDeleteItemElement(_options.deleteItemElement(), node,
-                  node.firstChild);
-            }
+        for (var i = 0, j = _collectionHolder.children.length; i < j; i++) {
+          _collectionHolder.dataset.index = (i).toString(10);
+          var node = _collectionHolder.children[i];
+          if (_options.allowDelete &&
+              node.classList.contains(_options.itemFormClass)) {
+            _insertDeleteItemElement(_options.deleteItemElement(), node,
+                node.firstChild);
           }
         }
         return this;
@@ -246,7 +280,8 @@ var sfForms = (function() {
 
   /**
    * The sfForms prototype
-   * @type {{sfForms: string, constructor: init, options, printId: printId, showOptions: showOptions}}
+   * @type {{sfForms: string, constructor: init, options, printId: printId,
+   *     showOptions: showOptions}}
    */
   init.prototype = sfForms.prototype = {
     sfForms: version,
