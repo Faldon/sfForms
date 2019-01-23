@@ -214,14 +214,14 @@
    */
   sfForms.prototype._onItemAdd = function(evt) {
     evt.preventDefault();
-    var index = this._collectionIndex(),
+    var index = this._collectionIndex(
+        (parseInt(this._collectionIndex()) + 1).toString(10)),
         itemForm = this._itemFormPrototype().replace(
             new RegExp(this._options.namePrototype, 'g'), index),
         item = document.createElement('div');
     if (typeof this._options.beforeAdd === 'function') {
       this._options.beforeAdd(this._collectionHolder);
     }
-    this._collectionIndex((parseInt(index) + 1).toString(10));
     this._collectionHolder.appendChild(item);
     item.outerHTML = itemForm;
     item = this._collectionHolder.lastElementChild;
