@@ -1,6 +1,6 @@
 (function(exports) {
 
-  var version = '0.9.1';
+  var version = '0.9.2';
 
   /**
    * Construct a new sfForms Object
@@ -56,6 +56,9 @@
     for (var i = 0, j = this._collectionHolder.children.length; i < j; i++) {
       this._collectionHolder.dataset.index = (i).toString(10);
       var node = this._collectionHolder.children[i];
+      if (!this._options.allowModify) {
+        this._valuesToDataSet(node);
+      }
       if (this._options.allowDelete &&
           node.classList.contains(this._options.itemFormClass)) {
         this._insertDeleteElement(this.elItemRemove(), node, node.firstChild);
@@ -75,7 +78,8 @@
    * @property {string} itemFormClass - The root class for the item form
    * @property {string} namePrototype - The form name in the data prototype
    * @property {boolean} allowAdd - Adding of new items allowed
-   * @property {boolean} allowDelete - Deleting of new items allowed
+   * @property {boolean} allowDelete - Deleting of items allowed
+   * @property {boolean} allowModify - Modifying of items allowed
    * @property {boolean} onlyHide - Hide the collection element instead of
    *                                removing it from the DOM
    * @property {array} addItemElementClass - CSS classes added to the add
@@ -91,6 +95,7 @@
     namePrototype: '__name__',
     allowAdd: true,
     allowDelete: true,
+    allowModify: true,
     onlyHide: false,
     addItemElementClass: [],
     deleteItemElementClass: [],
@@ -101,6 +106,9 @@
     beforeDelete: function(element) {
     },
     afterDelete: function(collectionNode) {
+    },
+    afterModify: function(collectionNode) {
+
     },
     language: 'en'
   };
@@ -243,6 +251,97 @@
    */
   sfForms.prototype._itemFormPrototype = function() {
     return this._collectionHolder.dataset.prototype;
+  };
+
+  /**
+   * Update the data-current property on all editable child elements of node
+   * with their editable value
+   * @param {Element} node
+   * @private
+   */
+  sfForms.prototype._valuesToDataSet = function(node) {
+    var self = this;
+    var items = node.getElementsByTagName('input');
+    for (var k = 0; k < items.length; k++) {
+      items[k].dataset.current = items[k].value;
+      items[k].addEventListener('change', function(e) {
+        e.srcElement.closest(
+            '.' + self._options.itemFormClass).dataset.changed = '';
+        }, false);
+    }
+    items = node.getElementsByTagName('select');
+    for (k = 0; k < items.length; k++) {
+      items[k].dataset.current = items[k].value;
+      items[k].addEventListener('change', function(e) {
+        e.srcElement.closest(
+            '.' + self._options.itemFormClass).dataset.changed = '';
+      }, false);
+    }
+    items = node.getElementsByTagName('textarea');
+    for (k = 0; k < items.length; k++) {
+      items[k].dataset.current = items[k].value;
+      items[k].addEventListener('change', function(e) {
+        e.srcElement.closest(
+            '.' + self._options.itemFormClass).dataset.changed = '';
+      }, false);
+    }
+  };
+
+  /**
+   * Updates the editable value on all editable child elements of node
+   * with their data-current property
+   * @param {Element} node
+   * @private
+   */
+  sfForms.prototype._dataSetToValues = function(node) {
+    var items = node.getElementsByTagName('input');
+    for (var k = 0; k < items.length; k++) {
+      items[k].value = items[k].dataset.current;
+    }
+    items = node.getElementsByTagName('select');
+    for (k = 0; k < items.length; k++) {
+      items[k].value = items[k].dataset.current;
+    }
+    items = node.getElementsByTagName('textarea');
+    for (k = 0; k < items.length; k++) {
+      items[k].value = items[k].dataset.current;
+    }
+  };
+
+  /**
+   * Insert changed collection items as new copy into the DOM tree
+   * and restore their current data from initialization
+   * @private
+   */
+  sfForms.prototype._insertNewFromCurrent = function() {
+    for (var i = 0; i < this._collectionHolder.children.length; i++) {
+      var item = window.sfAddresses._collectionHolder.children[i];
+      if (item.dataset.changed !== undefined) {
+        this._onItemAdd(new MouseEvent('click'));
+        var idx = this._collectionIndex();
+        var items = item.getElementsByTagName('input');
+        var regex = new RegExp('\\d+', 'g');
+        for (var k = 0; k < items.length; k++) {
+          var insert = document.getElementById(items[k].id.replace(regex, idx));
+          insert.value = items[k].value;
+        }
+        items = item.getElementsByTagName('select');
+        for (k = 0; k < items.length; k++) {
+          insert = document.getElementById(items[k].id.replace(regex, idx));
+          insert.value = items[k].value;
+        }
+        items = item.getElementsByTagName('textarea');
+        for (k = 0; k < items.length; k++) {
+          insert = document.getElementById(items[k].id.replace(regex, idx));
+          insert.value = items[k].value;
+        }
+        this._collectionHolder.lastElementChild.dataset.new = '';
+        this._dataSetToValues(item);
+      }
+    }
+    if (this._options.afterModify === typeof 'function') {
+      this._options.afterModify(this._collectionHolder);
+    }
   };
 
   /**
