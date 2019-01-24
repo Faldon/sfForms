@@ -108,7 +108,6 @@
     afterDelete: function(collectionNode) {
     },
     afterModify: function(collectionNode) {
-
     },
     language: 'en'
   };
@@ -315,7 +314,7 @@
    */
   sfForms.prototype._insertNewFromCurrent = function() {
     for (var i = 0; i < this._collectionHolder.children.length; i++) {
-      var item = window.sfAddresses._collectionHolder.children[i];
+      var item = this._collectionHolder.children[i];
       if (item.dataset.changed !== undefined) {
         this._onItemAdd(new MouseEvent('click'));
         var idx = this._collectionIndex();
