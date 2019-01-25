@@ -1,6 +1,6 @@
 (function(exports) {
 
-  var version = '0.9.2';
+  var version = '0.9.3';
 
   /**
    * Construct a new sfForms Object
@@ -338,7 +338,7 @@
         this._dataSetToValues(item);
       }
     }
-    if (this._options.afterModify === typeof 'function') {
+    if (typeof this._options.afterModify === 'function') {
       this._options.afterModify(this._collectionHolder);
     }
   };
@@ -372,6 +372,17 @@
    */
   sfForms.prototype.getConfiguration = function() {
     return this._options;
+  };
+
+  /**
+   * Processes the collection and insert new items for collection members that
+   * have changed if the property @allowModify ist set to false
+   * @public
+   */
+  sfForms.prototype.processCollection = function() {
+    if (!this._options.allowModify) {
+      this._insertNewFromCurrent();
+    }
   };
 
   /**
